@@ -1,0 +1,93 @@
+# Souken Nexus Platform — Git Ignore Rules
+# © 2019-2026 Souken Industries
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+
+# Rust
+target/
+Cargo.lock
+*.rlib
+
+# Node.js / TypeScript
+node_modules/
+npm-debug.log*
+.npm
+dist/
+*.tsbuildinfo
+
+# Go
+vendor/
+*.test
+*.out
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+
+# Haskell
+.stack-work/
+dist-newstyle/
+*.hi
+*.o
+*.dyn_hi
+*.dyn_o
+
+# Zig
+zig-cache/
+zig-out/
+
+# C
+*.o
+*.so
+*.dylib
+*.a
+*.d
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Docker
+docker-compose.override.yml
+
+# Secrets (NEVER commit these)
+*.pem
+*.key
+*.crt
+secrets/
+vault-token
+
+# Souken-specific
+.souken-cache/
+.nac-state/
+synthesis-output.log
+.claude/

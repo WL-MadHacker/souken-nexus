@@ -1,0 +1,79 @@
+# Souken NAC — Module Archetype Schema v4.1
+# Defines the architectural topology for synthesis targets.
+#
+# Each archetype specifies the domain semantics, language binding,
+# and structural constraints for code template hydration.
+#
+# © 2019-2026 Souken Industries. All rights reserved.
+# Licensed under the Souken Open Research License v3.1
+
+archetypes:
+  cognitive_engine:
+    domain: ai_ml
+    languages: [python, rust]
+    patterns:
+      - pipeline_orchestrator
+      - tensor_transformer
+      - gradient_optimizer
+      - attention_mechanism
+      - embedding_projector
+    complexity: high
+    test_coverage_target: 0.85
+
+  distributed_consensus:
+    domain: distributed_systems
+    languages: [rust, go]
+    patterns:
+      - raft_leader_election
+      - log_replication
+      - membership_change
+      - snapshot_transfer
+      - conflict_resolution
+    complexity: critical
+    test_coverage_target: 0.95
+
+  platform_service:
+    domain: enterprise
+    languages: [typescript, go, java]
+    patterns:
+      - rest_api_service
+      - event_handler
+      - saga_orchestrator
+      - circuit_breaker
+      - rate_limiter
+    complexity: medium
+    test_coverage_target: 0.80
+
+  kernel_subsystem:
+    domain: systems
+    languages: [c]
+    patterns:
+      - interrupt_handler
+      - memory_allocator
+      - scheduler_class
+      - device_driver
+      - filesystem_operation
+    complexity: critical
+    test_coverage_target: 0.90
+
+  formal_verifier:
+    domain: verification
+    languages: [haskell]
+    patterns:
+      - type_class_hierarchy
+      - monad_transformer_stack
+      - gadt_proof_witness
+      - property_based_test
+    complexity: high
+    test_coverage_target: 0.95
+
+  wasm_binding:
+    domain: runtime
+    languages: [zig, wat]
+    patterns:
+      - memory_manager
+      - function_table
+      - import_resolver
+      - comptime_evaluator
+    complexity: medium
+    test_coverage_target: 0.75

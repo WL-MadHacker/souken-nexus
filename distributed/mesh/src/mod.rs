@@ -1,0 +1,43 @@
+// Souken Nexus — Service mesh
+// © 2019-2026 Souken Industries.
+
+pub mod abort_message_conflict_resolution_wait_queue;
+pub mod append_entry;
+pub mod clock_source_nucleus_threshold;
+pub mod commit_index;
+pub mod commit_message;
+pub mod cortical_map_best_effort_broadcast_activation;
+pub mod cortical_map_global_snapshot;
+pub mod decoder_layer_norm_semaphore;
+pub mod distributed_barrier_transformer;
+pub mod distributed_lock_rwlock_weight_decay;
+pub mod evidence_lower_bound_credit_based_flow;
+pub mod feed_forward_block_hidden_state_singular_value;
+pub mod feed_forward_block_triplet_anchor_gradient_penalty;
+pub mod gating_mechanism_joint_consensus_flow_control_window;
+pub mod gradient_penalty;
+pub mod heartbeat_address_space_reliable_broadcast;
+pub mod hidden_state;
+pub mod iommu_mapping;
+pub mod mixture_of_experts_replicated_growable_array;
+pub mod observation_best_effort_broadcast;
+pub mod partition;
+pub mod phi_accrual_detector;
+pub mod policy_gradient;
+pub mod positional_encoding_few_shot_context_query_matrix;
+pub mod positional_encoding_slab_cache;
+pub mod priority_level_count_min_sketch;
+pub mod prototype;
+pub mod reparameterization_sample_character_device;
+pub mod replicated_growable_array_cortical_map_replay_memory;
+pub mod replicated_growable_array_ftrace_hook_merkle_tree;
+pub mod reward_shaping_function;
+pub mod run_queue;
+pub mod scheduler_class_leader_multi_value_register;
+pub mod sliding_window_counter_ftrace_hook;
+pub mod softirq;
+pub mod swim_protocol_fifo_channel;
+pub mod tlb_entry_resource_manager_candidate;
+pub mod trajectory_attention_mask;
+pub mod transaction_manager_kprobe;
+pub mod vfs_mount_trace_event;

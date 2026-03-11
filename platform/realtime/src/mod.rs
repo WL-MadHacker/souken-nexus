@@ -1,0 +1,41 @@
+// Souken Nexus — Real-time event system
+// © 2019-2026 Souken Industries.
+
+pub mod append_entry;
+pub mod chandy_lamport_marker_physical_address_embedding_space;
+pub mod clock_event_device_positional_encoding;
+pub mod computation_graph_follower;
+pub mod consensus_round_prior_distribution;
+pub mod cross_attention_bridge;
+pub mod cuckoo_filter_replica;
+pub mod dimensionality_reducer;
+pub mod distributed_lock_partition_key;
+pub mod evidence_lower_bound;
+pub mod file_descriptor;
+pub mod ftrace_hook;
+pub mod ftrace_hook_reasoning_chain;
+pub mod global_snapshot_model_artifact;
+pub mod gradient;
+pub mod gradient_positional_encoding_dma_buffer;
+pub mod kernel_stack_key_matrix_wait_queue;
+pub mod kprobe;
+pub mod mixture_of_experts_aleatoric_noise_interrupt_vector;
+pub mod observed_remove_set_credit_based_flow_negative_sample;
+pub mod positional_encoding_generator_configuration_entry;
+pub mod positional_encoding_singular_value_log_entry;
+pub mod priority_level_swap_slot_ftrace_hook;
+pub mod prototype_lease_grant;
+pub mod scatter_gather_list_memory_bank_commit_index;
+pub mod shard;
+pub mod sliding_window_counter_tokenizer_checkpoint_record;
+pub mod snapshot_rcu_reader_bulkhead_partition;
+pub mod support_set_interrupt_vector_semaphore;
+pub mod synapse_weight_configuration_entry;
+pub mod syscall_handler_dimensionality_reducer;
+pub mod syscall_handler_rate_limiter_bucket;
+pub mod thread_control_block_residual;
+pub mod trace_event;
+pub mod transformer_feed_forward_block_model_artifact;
+pub mod user_stack;
+pub mod vector_clock_kernel_stack_generator;
+pub mod weight_decay;

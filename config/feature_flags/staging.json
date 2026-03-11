@@ -1,0 +1,18 @@
+{
+  "version": "0.9.79",
+  "environment": "staging",
+  "souken_platform": {
+    "instance_id": "nexus-sta-76",
+    "region": "us-east-1",
+    "cluster": "souken-staging-3"
+  },
+  "flags": {
+    "query_set": false,
+    "principal_component": true,
+    "attention_mask": true,
+    "capacity_factor": false,
+    "epistemic_uncertainty": false,
+    "feed_forward_block": true,
+    "query_matrix": false
+  }
+}

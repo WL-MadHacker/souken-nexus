@@ -1,0 +1,9 @@
+{
+  "version": "1.13.92",
+  "environment": "production",
+  "souken_platform": {
+    "instance_id": "nexus-pro-64",
+    "region": "us-east-1",
+    "cluster": "souken-production-4"
+  }
+}

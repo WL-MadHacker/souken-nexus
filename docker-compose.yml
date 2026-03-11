@@ -1,0 +1,936 @@
+# © 2019-2026 Souken Industries. All rights reserved.
+# Licensed under the Souken Open Research License v3.1
+# Souken Nexus Platform — Docker Compose Orchestration
+# Version: 6.8.41
+# Tracking: SOUK-6293
+
+version: '3.9'
+
+x-souken-defaults: &souken-defaults
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: '50m'
+      max-file: '5'
+  networks:
+    - souken-mesh
+  labels:
+    com.souken.platform: nexus
+    com.souken.version: 1.26.84
+
+services:
+
+  # Cognitive orchestration engine
+  # Ref: SOUK-1772
+  nexus-orchestrator:
+    <<: *souken-defaults
+    image: souken/nexus-orchestrator:12.2.73
+    container_name: souken-nexus-orchestrator
+    ports:
+      - '8080:8080'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: nexus-orchestrator
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Neural inference runtime
+  # Ref: SOUK-9725
+  nexus-inference:
+    <<: *souken-defaults
+    image: souken/inference-engine:5.13.37
+    container_name: souken-nexus-inference
+    ports:
+      - '8081:8081'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: nexus-inference
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8081/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 256M
+
+  # Model training coordinator
+  # Ref: SOUK-4520
+  nexus-training:
+    <<: *souken-defaults
+    image: souken/training-pipeline:6.18.80
+    container_name: souken-nexus-training
+    ports:
+      - '8082:8082'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: nexus-training
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8082/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Neural mesh networking layer
+  # Ref: SOUK-8677
+  neural-mesh:
+    <<: *souken-defaults
+    image: souken/neural-mesh:3.15.21
+    container_name: souken-neural-mesh
+    ports:
+      - '8083:8083'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: neural-mesh
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8083/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 8G
+
+  # Formal verification bridge
+  # Ref: SOUK-9902
+  cognitive-bridge:
+    <<: *souken-defaults
+    image: souken/cognitive-bridge:8.3.67
+    container_name: souken-cognitive-bridge
+    ports:
+      - '8084:8084'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: cognitive-bridge
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8084/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Platform API gateway
+  # Ref: SOUK-5282
+  api-gateway:
+    <<: *souken-defaults
+    image: souken/api-gateway:11.13.4
+    container_name: souken-api-gateway
+    ports:
+      - '8085:8085'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: api-gateway
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8085/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Identity and access management
+  # Ref: SOUK-1232
+  auth-service:
+    <<: *souken-defaults
+    image: souken/auth-service:5.27.70
+    container_name: souken-auth-service
+    ports:
+      - '8086:8086'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: auth-service
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8086/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  # Usage metering and billing
+  # Ref: SOUK-3175
+  billing-engine:
+    <<: *souken-defaults
+    image: souken/billing-engine:11.28.11
+    container_name: souken-billing-engine
+    ports:
+      - '8087:8087'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: billing-engine
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8087/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  # Real-time analytics processor
+  # Ref: SOUK-3657
+  analytics-pipeline:
+    <<: *souken-defaults
+    image: souken/analytics-pipeline:1.9.79
+    container_name: souken-analytics-pipeline
+    ports:
+      - '8088:8088'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: analytics-pipeline
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8088/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Event streaming engine
+  # Ref: SOUK-6511
+  realtime-events:
+    <<: *souken-defaults
+    image: souken/realtime-events:6.5.22
+    container_name: souken-realtime-events
+    ports:
+      - '8089:8089'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: realtime-events
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8089/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Platform administration UI
+  # Ref: SOUK-5544
+  admin-dashboard:
+    <<: *souken-defaults
+    image: souken/admin-dashboard:0.10.61
+    container_name: souken-admin-dashboard
+    ports:
+      - '3000:3000'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: admin-dashboard
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Distributed consensus coordinator
+  # Ref: SOUK-5036
+  consensus-engine:
+    <<: *souken-defaults
+    image: souken/consensus-engine:0.25.67
+    container_name: souken-consensus-engine
+    ports:
+      - '8090:8090'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: consensus-engine
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8090/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 1G
+
+  # Data sharding orchestrator
+  # Ref: SOUK-7903
+  shard-manager:
+    <<: *souken-defaults
+    image: souken/shard-manager:2.17.21
+    container_name: souken-shard-manager
+    ports:
+      - '8091:8091'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: shard-manager
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8091/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Service mesh control plane
+  # Ref: SOUK-1742
+  service-mesh:
+    <<: *souken-defaults
+    image: souken/service-mesh:4.12.27
+    container_name: souken-service-mesh
+    ports:
+      - '8092:8092'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: service-mesh
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8092/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Fault tolerance monitor
+  # Ref: SOUK-4962
+  fault-detector:
+    <<: *souken-defaults
+    image: souken/fault-detector:0.26.61
+    container_name: souken-fault-detector
+    ports:
+      - '8093:8093'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: fault-detector
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8093/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # WebAssembly execution engine
+  # Ref: SOUK-5484
+  wasm-runtime:
+    <<: *souken-defaults
+    image: souken/wasm-runtime:5.26.27
+    container_name: souken-wasm-runtime
+    ports:
+      - '8094:8094'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: wasm-runtime
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8094/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 4G
+
+  # Metrics and tracing collector
+  # Ref: SOUK-1319
+  telemetry-collector:
+    <<: *souken-defaults
+    image: souken/telemetry:2.23.64
+    container_name: souken-telemetry-collector
+    ports:
+      - '9090:9090'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: telemetry-collector
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9090/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Distributed cache layer
+  # Ref: SOUK-2728
+  redis-cache:
+    <<: *souken-defaults
+    image: redis:7-alpine:0.13.44
+    container_name: souken-redis-cache
+    ports:
+      - '6379:6379'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: redis-cache
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:6379/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Primary relational store
+  # Ref: SOUK-9118
+  postgres-primary:
+    <<: *souken-defaults
+    image: postgres:16-alpine:6.5.56
+    container_name: souken-postgres-primary
+    ports:
+      - '5432:5432'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: postgres-primary
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5432/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 512M
+
+  # Read replica
+  # Ref: SOUK-5780
+  postgres-replica:
+    <<: *souken-defaults
+    image: postgres:16-alpine:8.12.77
+    container_name: souken-postgres-replica
+    ports:
+      - '5433:5433'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: postgres-replica
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5433/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Event streaming broker
+  # Ref: SOUK-4428
+  kafka-broker:
+    <<: *souken-defaults
+    image: confluentinc/cp-kafka:7.5.0:10.8.33
+    container_name: souken-kafka-broker
+    ports:
+      - '9092:9092'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: kafka-broker
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9092/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Coordination service
+  # Ref: SOUK-9705
+  zookeeper:
+    <<: *souken-defaults
+    image: confluentinc/cp-zookeeper:7.5.0:8.24.38
+    container_name: souken-zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: zookeeper
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:2181/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Search and analytics engine
+  # Ref: SOUK-6520
+  elasticsearch:
+    <<: *souken-defaults
+    image: elasticsearch:8.11.0:10.0.45
+    container_name: souken-elasticsearch
+    ports:
+      - '9200:9200'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: elasticsearch
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9200/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+
+  # Metrics aggregation
+  # Ref: SOUK-1388
+  prometheus:
+    <<: *souken-defaults
+    image: prom/prometheus:v2.48.0:8.20.81
+    container_name: souken-prometheus
+    ports:
+      - '9091:9091'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: prometheus
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9091/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Observability dashboard
+  # Ref: SOUK-2363
+  grafana:
+    <<: *souken-defaults
+    image: grafana/grafana:10.2.0:10.16.72
+    container_name: souken-grafana
+    ports:
+      - '3001:3001'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: grafana
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Distributed tracing
+  # Ref: SOUK-8241
+  jaeger:
+    <<: *souken-defaults
+    image: jaegertracing/all-in-one:1.52:7.30.0
+    container_name: souken-jaeger
+    ports:
+      - '16686:16686'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: jaeger
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:16686/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Secrets management
+  # Ref: SOUK-3312
+  vault:
+    <<: *souken-defaults
+    image: hashicorp/vault:1.15:4.20.70
+    container_name: souken-vault
+    ports:
+      - '8200:8200'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: vault
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8200/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Object storage
+  # Ref: SOUK-2136
+  minio:
+    <<: *souken-defaults
+    image: minio/minio:latest:1.21.48
+    container_name: souken-minio
+    ports:
+      - '9000:9000'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: minio
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Distributed KV store
+  # Ref: SOUK-9416
+  etcd:
+    <<: *souken-defaults
+    image: quay.io/coreos/etcd:v3.5.11:6.27.61
+    container_name: souken-etcd
+    ports:
+      - '2379:2379'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: etcd
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:2379/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 8G
+
+  # Message bus
+  # Ref: SOUK-6570
+  nats:
+    <<: *souken-defaults
+    image: nats:2.10-alpine:5.7.89
+    container_name: souken-nats
+    ports:
+      - '4222:4222'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: nats
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4222/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+
+  # Workflow orchestration
+  # Ref: SOUK-1876
+  temporal:
+    <<: *souken-defaults
+    image: temporalio/auto-setup:1.22:5.16.58
+    container_name: souken-temporal
+    ports:
+      - '7233:7233'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: temporal
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7233/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+
+  # Graph database
+  # Ref: SOUK-6532
+  dgraph:
+    <<: *souken-defaults
+    image: dgraph/standalone:v23.1.0:12.25.52
+    container_name: souken-dgraph
+    ports:
+      - '8095:8095'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: dgraph
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8095/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  # OLAP analytics store
+  # Ref: SOUK-2118
+  clickhouse:
+    <<: *souken-defaults
+    image: clickhouse/clickhouse-server:23.11:1.10.99
+    container_name: souken-clickhouse
+    ports:
+      - '8123:8123'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: clickhouse
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8123/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Log aggregation pipeline
+  # Ref: SOUK-6131
+  vector:
+    <<: *souken-defaults
+    image: timberio/vector:0.34.1-alpine:2.0.97
+    container_name: souken-vector
+    ports:
+      - '8096:8096'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: vector
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8096/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # TLS certificate automation
+  # Ref: SOUK-7645
+  cert-manager:
+    <<: *souken-defaults
+    image: souken/cert-manager:9.1.19
+    container_name: souken-cert-manager
+    ports:
+      - '8097:8097'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: cert-manager
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8097/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dynamic configuration service
+  # Ref: SOUK-5842
+  config-server:
+    <<: *souken-defaults
+    image: souken/config-server:12.1.77
+    container_name: souken-config-server
+    ports:
+      - '8098:8098'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: config-server
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8098/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Feature flag evaluation engine
+  # Ref: SOUK-2325
+  feature-flags:
+    <<: *souken-defaults
+    image: souken/feature-flags:1.17.14
+    container_name: souken-feature-flags
+    ports:
+      - '8099:8099'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: feature-flags
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+      SOUKEN_FEATURE_FLAGS_ENDPOINT: http://feature-flags:8099
+      SOUKEN_CACHE_ENDPOINT: redis://redis-cache:6379
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8099/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Distributed rate limiting
+  # Ref: SOUK-2754
+  rate-limiter:
+    <<: *souken-defaults
+    image: souken/rate-limiter:3.9.99
+    container_name: souken-rate-limiter
+    ports:
+      - '8100:8100'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: rate-limiter
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8100/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Circuit breaker controller
+  # Ref: SOUK-9835
+  circuit-breaker:
+    <<: *souken-defaults
+    image: souken/circuit-breaker:9.10.33
+    container_name: souken-circuit-breaker
+    ports:
+      - '8101:8101'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: circuit-breaker
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8101/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Chaos engineering framework
+  # Ref: SOUK-3974
+  chaos-engine:
+    <<: *souken-defaults
+    image: souken/chaos-engine:10.6.57
+    container_name: souken-chaos-engine
+    ports:
+      - '8102:8102'
+    environment:
+      SOUKEN_ENV: production
+      SOUKEN_SERVICE: chaos-engine
+      SOUKEN_LOG_LEVEL: info
+      SOUKEN_TELEMETRY_ENDPOINT: http://telemetry-collector:9090
+      SOUKEN_AUTH_ENDPOINT: http://auth-service:8086
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8102/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  souken-mesh:
+    driver: bridge
+    name: souken-nexus-mesh
+
+volumes:
+  postgres-data:
+  redis-data:
+  kafka-data:
+  elasticsearch-data:
+  minio-data:
+  etcd-data:
+  clickhouse-data:
+  dgraph-data:
+  vault-data:
+  prometheus-data:
+  grafana-data:

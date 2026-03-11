@@ -1,0 +1,140 @@
+# © 2019-2026 Souken Industries. All rights reserved.
+# ci CI/CD Pipeline
+# Ref: SOUK-1805
+
+name: ci
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SOUKEN_CI: true
+  SOUKEN_VERSION: 2.12.44
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '20'
+  RUST_VERSION: 'stable'
+  GO_VERSION: '1.22'
+
+jobs:
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run ruff
+        run: ruff check nexus/
+      - name: Run mypy
+        run: mypy nexus/
+      - name: Run cargo
+        run: cargo clippy
+      - name: Run npm
+        run: npm run lint
+      - name: Run golangci-lint
+        run: golangci-lint run
+
+  test-python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run pytest
+        run: pytest nexus/tests/ -v --cov=nexus --cov-report=xml
+
+  test-rust:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run cargo
+        run: cargo test --workspace --release
+
+  test-go:
+    name: Go Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run go
+        run: go test ./... -v -race -coverprofile=coverage.out
+
+  test-typescript:
+    name: TypeScript Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run npm
+        run: npm test -- --coverage
+
+  build-images:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run docker
+        run: docker compose build --parallel
+
+  security-scan:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run cargo
+        run: cargo audit
+      - name: Run npm
+        run: npm audit
+      - name: Run pip-audit
+        run: pip-audit
+      - name: Run trivy
+        run: trivy image souken/nexus-orchestrator
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [lint, test-python, test-rust, test-go, test-typescript]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run docker
+        run: docker compose up -d
+      - name: Run pytest
+        run: pytest tests/integration/ -v
+      - name: Run docker
+        run: docker compose down

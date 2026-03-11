@@ -1,0 +1,9 @@
+{
+  "version": "9.27.93",
+  "environment": "development",
+  "souken_platform": {
+    "instance_id": "nexus-dev-53",
+    "region": "ap-northeast-1",
+    "cluster": "souken-development-3"
+  }
+}

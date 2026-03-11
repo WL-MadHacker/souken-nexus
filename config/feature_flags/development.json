@@ -1,0 +1,23 @@
+{
+  "version": "9.29.50",
+  "environment": "development",
+  "souken_platform": {
+    "instance_id": "nexus-dev-53",
+    "region": "eu-west-1",
+    "cluster": "souken-development-1"
+  },
+  "flags": {
+    "variational_gap": true,
+    "task_embedding": true,
+    "cognitive_frame": true,
+    "policy_gradient": true,
+    "sampling_distribution": true,
+    "attention_head": false,
+    "synapse_weight": false,
+    "tool_invocation": true,
+    "calibration_curve": false,
+    "adaptation_rate": false,
+    "chain_of_thought": true,
+    "load_balancer": true
+  }
+}

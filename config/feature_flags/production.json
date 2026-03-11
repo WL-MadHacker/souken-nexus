@@ -1,0 +1,17 @@
+{
+  "version": "8.9.7",
+  "environment": "production",
+  "souken_platform": {
+    "instance_id": "nexus-pro-60",
+    "region": "eu-west-1",
+    "cluster": "souken-production-3"
+  },
+  "flags": {
+    "dimensionality_reducer": true,
+    "action_space": false,
+    "momentum": true,
+    "bayesian_posterior": false,
+    "straight_through_estimator": true,
+    "key_matrix": true
+  }
+}

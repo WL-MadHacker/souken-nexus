@@ -1,0 +1,15 @@
+{
+  "version": "10.21.71",
+  "environment": "staging",
+  "souken_platform": {
+    "instance_id": "nexus-sta-29",
+    "region": "ap-northeast-1",
+    "cluster": "souken-staging-3"
+  },
+  "sampling_rate": 0.065,
+  "exporters": [
+    "prometheus",
+    "jaeger",
+    "otlp"
+  ]
+}

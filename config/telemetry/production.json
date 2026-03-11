@@ -1,0 +1,15 @@
+{
+  "version": "0.1.52",
+  "environment": "production",
+  "souken_platform": {
+    "instance_id": "nexus-pro-23",
+    "region": "eu-west-1",
+    "cluster": "souken-production-5"
+  },
+  "sampling_rate": 0.16,
+  "exporters": [
+    "prometheus",
+    "jaeger",
+    "otlp"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "11.11.22",
+  "environment": "development",
+  "souken_platform": {
+    "instance_id": "nexus-dev-87",
+    "region": "us-east-1",
+    "cluster": "souken-development-3"
+  },
+  "sampling_rate": 0.168,
+  "exporters": [
+    "prometheus",
+    "jaeger",
+    "otlp"
+  ]
+}

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOUKEN INDUSTRIES — Breakthrough Console</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a0a;
+    color: #33ff33;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 13px;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: #111;
+    border-bottom: 1px solid #33ff3344;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    color: #33ff33;
+    letter-spacing: 3px;
+  }
+  .header .run-count {
+    color: #33ff3388;
+    font-size: 11px;
+  }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    height: calc(100vh - 48px - 48px); /* minus header and footer */
+  }
+
+  /* Content preview (left) */
+  .preview-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    border-right: 1px solid #33ff3322;
+  }
+  .preview-panel::-webkit-scrollbar { width: 6px; }
+  .preview-panel::-webkit-scrollbar-track { background: #111; }
+  .preview-panel::-webkit-scrollbar-thumb { background: #33ff3344; border-radius: 3px; }
+
+  .preview-content {
+    color: #ccc;
+    line-height: 1.6;
+  }
+  .preview-content h1 { color: #33ff33; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #33ff3333; padding-bottom: 8px; }
+  .preview-content h2 { color: #33ff33cc; font-size: 15px; margin-top: 20px; margin-bottom: 8px; }
+  .preview-content h3 { color: #33ff3399; font-size: 14px; margin-top: 16px; margin-bottom: 6px; }
+  .preview-content p { margin-bottom: 10px; }
+  .preview-content code { background: #1a1a1a; color: #ff9933; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  .preview-content pre { background: #111; border: 1px solid #33ff3322; border-radius: 4px; padding: 12px; margin: 10px 0; overflow-x: auto; }
+  .preview-content pre code { background: none; color: #aaa; padding: 0; }
+  .preview-content table { border-collapse: collapse; margin: 10px 0; width: 100%; }
+  .preview-content th, .preview-content td { border: 1px solid #33ff3333; padding: 6px 10px; text-align: left; }
+  .preview-content th { background: #1a1a1a; color: #33ff33; }
+  .preview-content strong { color: #ffaa33; }
+  .preview-content img { max-width: 100%; border: 1px solid #33ff3333; border-radius: 4px; margin: 10px 0; }
+  .preview-content ul, .preview-content ol { margin-left: 20px; margin-bottom: 10px; }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #33ff3344;
+    text-align: center;
+  }
+  .empty-state .logo {
+    font-size: 48px;
+    margin-bottom: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 6px;
+  }
+  .empty-state p { font-size: 14px; }
+
+  /* Sidebar (right) */
+  .sidebar {
+    width: 320px;
+    min-width: 320px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #0d0d0d;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sidebar-section {
+    background: #111;
+    border: 1px solid #33ff3322;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .sidebar-section h3 {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #33ff3388;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .meta-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .meta-label { color: #33ff3366; }
+  .meta-value { color: #ccc; text-align: right; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .cliff-note {
+    color: #aaa;
+    padding: 4px 0 4px 12px;
+    border-left: 2px solid #33ff3344;
+    margin-bottom: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn {
+    background: #1a1a1a;
+    color: #33ff33;
+    border: 1px solid #33ff3344;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn:hover { background: #222; border-color: #33ff33; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-generate {
+    background: #0a2a0a;
+    border-color: #33ff33;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 14px;
+  }
+  .btn-generate:hover { background: #0f3f0f; box-shadow: 0 0 20px #33ff3333; }
+
+  .btn-ship {
+    background: #2a0a0a;
+    color: #ff4444;
+    border-color: #ff444444;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 14px;
+  }
+  .btn-ship:hover { background: #3f0f0f; border-color: #ff4444; box-shadow: 0 0 20px #ff444433; }
+
+  .btn-regen {
+    background: #1a1a0a;
+    color: #ffaa33;
+    border-color: #ffaa3344;
+  }
+  .btn-regen:hover { border-color: #ffaa33; }
+
+  /* Image upload */
+  .upload-zone {
+    border: 1px dashed #33ff3333;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: #33ff3366;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .upload-zone:hover { border-color: #33ff33; color: #33ff33; }
+  .upload-zone.has-file { border-color: #ffaa33; color: #ffaa33; border-style: solid; }
+
+  /* Mermaid input */
+  .mermaid-input {
+    background: #111;
+    border: 1px solid #33ff3322;
+    color: #ccc;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 8px;
+    border-radius: 4px;
+    width: 100%;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .mermaid-input:focus { outline: none; border-color: #33ff33; }
+  .mermaid-input::placeholder { color: #33ff3333; }
+
+  /* Feedback input */
+  .feedback-input {
+    background: #111;
+    border: 1px solid #33ff3322;
+    color: #ccc;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 4px;
+    width: 100%;
+    resize: vertical;
+    min-height: 40px;
+  }
+  .feedback-input:focus { outline: none; border-color: #ffaa33; }
+  .feedback-input::placeholder { color: #33ff3333; }
+
+  /* Footer / Status bar */
+  .footer {
+    background: #111;
+    border-top: 1px solid #33ff3322;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 48px;
+  }
+  .status { color: #33ff3388; font-size: 12px; }
+  .status.shipping { color: #ffaa33; }
+  .status.success { color: #33ff33; }
+  .status.error { color: #ff4444; }
+
+  /* Image preview */
+  .image-preview {
+    max-width: 100%;
+    max-height: 80px;
+    border-radius: 4px;
+    margin-top: 6px;
+    border: 1px solid #33ff3322;
+  }
+
+  /* Hide file input */
+  #imageInput { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SOUKEN INDUSTRIES — BREAKTHROUGH CONSOLE</h1>
+  <span class="run-count" id="runCount">RUN #0</span>
+</div>
+
+<div class="main">
+  <!-- Left: Content Preview -->
+  <div class="preview-panel">
+    <div id="emptyState" class="empty-state">
+      <div class="logo">S◈UKEN</div>
+      <p>Click GENERATE to synthesize a breakthrough.</p>
+      <p style="margin-top:8px; font-size:12px; color:#33ff3322;">Research Division — Advanced Systems</p>
+    </div>
+    <div id="previewContent" class="preview-content" style="display:none;"></div>
+  </div>
+
+  <!-- Right: Sidebar -->
+  <div class="sidebar">
+    <!-- Generate Button -->
+    <button class="btn btn-generate" id="btnGenerate" onclick="doGenerate()">
+      ⚡ GENERATE BREAKTHROUGH
+    </button>
+
+    <!-- Debrief -->
+    <div class="sidebar-section" id="debriefSection" style="display:none;">
+      <h3>DEBRIEF</h3>
+      <div class="meta-row"><span class="meta-label">Type</span><span class="meta-value" id="metaType">—</span></div>
+      <div class="meta-row"><span class="meta-label">Branch</span><span class="meta-value" id="metaBranch">—</span></div>
+      <div class="meta-row"><span class="meta-label">PR Title</span><span class="meta-value" id="metaPR">—</span></div>
+      <div class="meta-row"><span class="meta-label">File</span><span class="meta-value" id="metaFile">—</span></div>
+    </div>
+
+    <!-- Cliff Notes -->
+    <div class="sidebar-section" id="cliffSection" style="display:none;">
+      <h3>CLIFF NOTES</h3>
+      <div id="cliffNotes"></div>
+    </div>
+
+    <!-- Enhancements -->
+    <div class="sidebar-section" id="enhanceSection" style="display:none;">
+      <h3>ENHANCE</h3>
+
+      <!-- Image Upload -->
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imageInput').click()">
+        📎 Attach Figure (optional)
+      </div>
+      <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(this)">
+      <img id="imagePreview" class="image-preview" style="display:none;">
+
+      <!-- Mermaid -->
+      <div style="margin-top:8px;">
+        <textarea class="mermaid-input" id="mermaidInput" placeholder="Paste mermaid diagram syntax...&#10;graph LR&#10;  A-->B-->C" rows="4"></textarea>
+      </div>
+
+      <!-- Feedback -->
+      <div style="margin-top:8px;">
+        <textarea class="feedback-input" id="feedbackInput" placeholder="Iteration notes..." rows="2"></textarea>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn btn-regen" style="flex:1;" onclick="doRegenerate()">⟳ Regenerate</button>
+        <button class="btn" style="flex:1;" onclick="applyEnhancements()">Apply Changes</button>
+      </div>
+    </div>
+
+    <!-- Ship Button -->
+    <div id="shipSection" style="display:none;">
+      <button class="btn btn-ship" id="btnShip" onclick="doShip()" style="width:100%;">
+        🚀 SHIP IT
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="status" id="statusText">Ready.</span>
+  <span style="color:#33ff3333; font-size:11px;">Souken Research Division v1.0</span>
+</div>
+
+<script>
+  // Initialize mermaid with dark theme
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1a3a1a',
+      primaryTextColor: '#33ff33',
+      primaryBorderColor: '#33ff3366',
+      lineColor: '#33ff3366',
+      secondaryColor: '#1a1a2a',
+      tertiaryColor: '#0a0a0a',
+    }
+  });
+
+  let currentResult = null;
+  let uploadedImagePath = null;
+
+  function setStatus(text, cls) {
+    const el = document.getElementById('statusText');
+    el.textContent = text;
+    el.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  async function doGenerate() {
+    const btn = document.getElementById('btnGenerate');
+    btn.disabled = true;
+    btn.textContent = '⏳ Generating...';
+    setStatus('Synthesizing breakthrough...', 'shipping');
+
+    try {
+      const body = {};
+      if (uploadedImagePath) body.image_path = uploadedImagePath;
+      const mermaid = document.getElementById('mermaidInput').value.trim();
+      if (mermaid) body.mermaid_code = mermaid;
+
+      const resp = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      currentResult = await resp.json();
+      renderResult(currentResult);
+      setStatus('Breakthrough generated. Review and enhance, then ship.', '');
+    } catch (e) {
+      setStatus('Generation failed: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚡ GENERATE BREAKTHROUGH';
+    }
+  }
+
+  async function doRegenerate() {
+    setStatus('Regenerating with new seed...', 'shipping');
+    try {
+      const body = {};
+      if (uploadedImagePath) body.image_path = uploadedImagePath;
+      const mermaid = document.getElementById('mermaidInput').value.trim();
+      if (mermaid) body.mermaid_code = mermaid;
+      const feedback = document.getElementById('feedbackInput').value.trim();
+      if (feedback) body.feedback = feedback;
+
+      const resp = await fetch('/regenerate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      currentResult = await resp.json();
+      renderResult(currentResult);
+      setStatus('Regenerated. Review and ship.', '');
+    } catch (e) {
+      setStatus('Regeneration failed: ' + e.message, 'error');
+    }
+  }
+
+  async function applyEnhancements() {
+    if (!currentResult) return;
+    setStatus('Applying enhancements...', 'shipping');
+    try {
+      const body = { content: currentResult.content };
+      const mermaid = document.getElementById('mermaidInput').value.trim();
+      if (mermaid) body.mermaid_code = mermaid;
+
+      await fetch('/update-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      // Re-fetch to get updated content
+      if (mermaid && !currentResult.content.includes('```mermaid')) {
+        // Content was updated server-side, re-render
+        const resp = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_path: uploadedImagePath,
+            mermaid_code: mermaid,
+          }),
+        });
+        currentResult = await resp.json();
+        renderResult(currentResult);
+      }
+      setStatus('Enhancements applied.', '');
+    } catch (e) {
+      setStatus('Failed: ' + e.message, 'error');
+    }
+  }
+
+  function renderResult(data) {
+    // Hide empty state, show content
+    document.getElementById('emptyState').style.display = 'none';
+    const preview = document.getElementById('previewContent');
+    preview.style.display = 'block';
+    preview.innerHTML = marked.parse(data.content);
+
+    // Render any mermaid blocks
+    preview.querySelectorAll('pre code.language-mermaid').forEach(async (block) => {
+      const container = document.createElement('div');
+      container.className = 'mermaid';
+      container.textContent = block.textContent;
+      block.parentElement.replaceWith(container);
+      await mermaid.run({ nodes: [container] });
+    });
+
+    // Show sidebar sections
+    document.getElementById('debriefSection').style.display = 'block';
+    document.getElementById('cliffSection').style.display = 'block';
+    document.getElementById('enhanceSection').style.display = 'block';
+    document.getElementById('shipSection').style.display = 'block';
+
+    // Fill debrief
+    document.getElementById('metaType').textContent = data.type.toUpperCase();
+    document.getElementById('metaBranch').textContent = data.metadata.branch;
+    document.getElementById('metaPR').textContent = data.metadata.pr_title;
+    document.getElementById('metaFile').textContent = data.metadata.file_path;
+
+    // Fill cliff notes
+    const cliffDiv = document.getElementById('cliffNotes');
+    cliffDiv.innerHTML = '';
+    (data.summary.cliff_notes || []).forEach(note => {
+      const div = document.createElement('div');
+      div.className = 'cliff-note';
+      div.textContent = note;
+      cliffDiv.appendChild(div);
+    });
+
+    // Update run count
+    fetch('/state').then(r => r.json()).then(s => {
+      document.getElementById('runCount').textContent = `RUN #${s.run_count}`;
+    });
+  }
+
+  function handleImageUpload(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setStatus('Uploading figure...', 'shipping');
+
+    fetch('/upload-image', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        uploadedImagePath = data.path;
+        document.getElementById('uploadZone').textContent = '📎 ' + data.filename;
+        document.getElementById('uploadZone').classList.add('has-file');
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.getElementById('imagePreview');
+          img.src = e.target.result;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+
+        setStatus('Figure attached: ' + data.filename, '');
+      })
+      .catch(e => setStatus('Upload failed: ' + e.message, 'error'));
+  }
+
+  async function doShip() {
+    if (!currentResult) return;
+    const btn = document.getElementById('btnShip');
+    btn.disabled = true;
+    btn.textContent = '🚀 SHIPPING...';
+    setStatus('Initiating ship sequence...', 'shipping');
+
+    try {
+      await fetch('/ship', { method: 'POST' });
+
+      // Listen to SSE for progress
+      const evtSource = new EventSource('/ship-status');
+      evtSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.msg) {
+          setStatus(data.msg, 'shipping');
+        }
+        if (data.done) {
+          evtSource.close();
+          if (data.error) {
+            setStatus('Ship failed: ' + data.error, 'error');
+            btn.textContent = '🚀 SHIP IT';
+            btn.disabled = false;
+          } else {
+            setStatus('Breakthrough shipped and merged!', 'success');
+            btn.textContent = '✓ SHIPPED';
+            setTimeout(() => {
+              btn.textContent = '🚀 SHIP IT';
+              btn.disabled = false;
+            }, 3000);
+          }
+        }
+      };
+    } catch (e) {
+      setStatus('Ship failed: ' + e.message, 'error');
+      btn.textContent = '🚀 SHIP IT';
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>

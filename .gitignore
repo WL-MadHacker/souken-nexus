@@ -91,3 +91,8 @@ vault-token
 .nac-state/
 synthesis-output.log
 .claude/
+.playwright-mcp/
+
+# Breakthrough Console
+tools/souken-nac/.breakthrough_state.json
+tools/souken-nac/uploads/

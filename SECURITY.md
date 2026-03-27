@@ -17,7 +17,7 @@ Souken Nexus Platform security is managed under the **Souken Trust Framework (ST
 
 If you discover a security vulnerability in Souken Nexus, please report it responsibly:
 
-1. **Email:** security@souken.io (PGP key: `0xDEAD BEEF CAFE 1234`)
+1. **Email:** security@soukenindustries.com
 2. **Severity Assessment:** Use the Souken Vulnerability Scoring System (SVSS), an extension of CVSS v4.0 tailored for cognitive computing platforms
 3. **Response Timeline:**
    - Acknowledgment: Within 24 hours
